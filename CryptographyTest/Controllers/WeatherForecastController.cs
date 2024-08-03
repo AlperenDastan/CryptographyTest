@@ -99,7 +99,7 @@ namespace CryptographyTest.Controllers
                 if (!string.IsNullOrEmpty(cas.Name))
                 {
                     casesNames += cas.Name;
-                    cas.Name = AesService.Encrypt(cas.Name);
+                    cas.Name = RsaService.Encrypt(cas.Name);
                     casesEncryptedNames += cas.Name;
                 }
             }
@@ -121,7 +121,7 @@ namespace CryptographyTest.Controllers
                 if (!string.IsNullOrEmpty(cas.Name))
                 {
                     casesEncryptedNames += cas.Name;
-                    cas.Name = AesService.Decrypt(cas.Name);
+                    cas.Name = RsaService.Decrypt(cas.Name);
                     casesNames += cas.Name;
                 }
             }
