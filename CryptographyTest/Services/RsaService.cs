@@ -10,6 +10,7 @@ namespace CryptographyTest.Services
 
         static RsaService()
         {
+            // Key Pair Generation
             using (var rsa = new RSACryptoServiceProvider(2048))
             {
                 rsa.PersistKeyInCsp = false; // Do not persist the keys in a container
@@ -26,10 +27,10 @@ namespace CryptographyTest.Services
             using (var rsa = new RSACryptoServiceProvider(2048))
             {
                 rsa.PersistKeyInCsp = false;
-                rsa.ImportParameters(_publicKey);
+                rsa.ImportParameters(_publicKey); // Use the public key for encryption
                 var data = Encoding.UTF8.GetBytes(plainText);
-                var encryptedData = rsa.Encrypt(data, false);
-                return Convert.ToBase64String(encryptedData);
+                var encryptedData = rsa.Encrypt(data, false); // Encrypt the data
+                return Convert.ToBase64String(encryptedData); // Return encrypted data as a base64 string
             }
         }
 
@@ -41,10 +42,10 @@ namespace CryptographyTest.Services
             using (var rsa = new RSACryptoServiceProvider(2048))
             {
                 rsa.PersistKeyInCsp = false;
-                rsa.ImportParameters(_privateKey);
+                rsa.ImportParameters(_privateKey); // Use the private key for decryption
                 var data = Convert.FromBase64String(cipherText);
-                var decryptedData = rsa.Decrypt(data, false);
-                return Encoding.UTF8.GetString(decryptedData);
+                var decryptedData = rsa.Decrypt(data, false); // Decrypt the data
+                return Encoding.UTF8.GetString(decryptedData); // Return decrypted data as a string
             }
         }
 
@@ -52,8 +53,9 @@ namespace CryptographyTest.Services
         {
             using (var rsa = new RSACryptoServiceProvider(2048))
             {
-                return Convert.ToBase64String(rsa.ExportCspBlob(false));
+                return Convert.ToBase64String(rsa.ExportCspBlob(false)); // Export the public key as a base64 string
             }
+        }
         }
     }
 }
