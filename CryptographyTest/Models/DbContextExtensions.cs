@@ -22,9 +22,9 @@ namespace CryptographyTest.Models
             if (!context.Users.Any())
             {
                 context.Users.AddRange(
-                    new User { Name = "Detective John Doe", BadgeNumber = "BD123", Email = "john.doe@example.com", Role = UserRole.Detective, Password = HashingService.HashPassword("password1") },
-                    new User { Name = "Detective Jane Smith", BadgeNumber = "BD456", Email = "jane.smith@example.com", Role = UserRole.Detective, Password = HashingService.HashPassword("password2") },
-                    new User { Name = "Supervisor Anne Clark", BadgeNumber = "BS789", Email = "anne.clark@example.com", Role = UserRole.Supervisor, Password = HashingService.HashPassword("password3") }
+                    new User { UserName = "Detective John Doe", BadgeNumber = "BD123", Email = "john.doe@example.com", Role = UserRole.Detective, Password = HashingService.HashPassword("password1") },
+                    new User { UserName = "Detective Jane Smith", BadgeNumber = "BD456", Email = "jane.smith@example.com", Role = UserRole.Detective, Password = HashingService.HashPassword("password2") },
+                    new User { UserName = "Supervisor Anne Clark", BadgeNumber = "BS789", Email = "anne.clark@example.com", Role = UserRole.Supervisor, Password = HashingService.HashPassword("password3") }
                 );
                 context.SaveChanges();
             }

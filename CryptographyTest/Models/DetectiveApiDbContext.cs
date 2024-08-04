@@ -13,133 +13,113 @@ namespace CryptographyTest.Models
         public DetectiveApiDbContext(DbContextOptions<DetectiveApiDbContext> options) : base(options)
         {
         }
+
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
             modelBuilder.Entity<User>()
                 .Property(u => u.Email)
-                 .IsConcurrencyToken(false)
+                .IsConcurrencyToken(false)
                 .HasConversion(
-                    v => AesService.Encrypt(v),  // Encrypt when writing to the database
-                    v => AesService.Decrypt(v)   // Decrypt when reading from the database
+                    v => AesService.Encrypt(v),
+                    v => AesService.Decrypt(v)
                 );
 
             modelBuilder.Entity<User>()
-                .Property(u => u.Name)
-                 .IsConcurrencyToken(false)
+                .Property(u => u.UserName)
+                .IsConcurrencyToken(false)
                 .HasConversion(
-                    v => AesService.Encrypt(v),  // Encrypt when writing to the database
-                    v => AesService.Decrypt(v)   // Decrypt when reading from the database
+                    v => AesService.Encrypt(v),
+                    v => AesService.Decrypt(v)
                 );
 
             modelBuilder.Entity<Case>()
                 .Property(u => u.Name)
-                 .IsConcurrencyToken(false)
+                .IsConcurrencyToken(false)
                 .HasConversion(
-                    v => AesService.Encrypt(v),  // Encrypt when writing to the database
-                    v => AesService.Decrypt(v)   // Decrypt when reading from the database
+                    v => AesService.Encrypt(v),
+                    v => AesService.Decrypt(v)
                 );
+
             modelBuilder.Entity<Case>()
                 .Property(u => u.Description)
-                 .IsConcurrencyToken(false)
+                .IsConcurrencyToken(false)
                 .HasConversion(
-                    v => AesService.Encrypt(v),  // Encrypt when writing to the database
-                    v => AesService.Decrypt(v)   // Decrypt when reading from the database
+                    v => AesService.Encrypt(v),
+                    v => AesService.Decrypt(v)
                 );
+
             modelBuilder.Entity<Tip>()
                 .Property(u => u.Description)
-                 .IsConcurrencyToken(false)
+                .IsConcurrencyToken(false)
                 .HasConversion(
-                    v => AesService.Encrypt(v),  // Encrypt when writing to the database
-                    v => AesService.Decrypt(v)   // Decrypt when reading from the database
+                    v => AesService.Encrypt(v),
+                    v => AesService.Decrypt(v)
                 );
+
             modelBuilder.Entity<ContactPerson>()
                 .Property(u => u.Name)
-                 .IsConcurrencyToken(false)
+                .IsConcurrencyToken(false)
                 .HasConversion(
-                    v => AesService.Encrypt(v),  // Encrypt when writing to the database
-                    v => AesService.Decrypt(v)   // Decrypt when reading from the database
+                    v => AesService.Encrypt(v),
+                    v => AesService.Decrypt(v)
                 );
+
             modelBuilder.Entity<ContactPerson>()
                 .Property(u => u.Phone)
-                 .IsConcurrencyToken(false)
+                .IsConcurrencyToken(false)
                 .HasConversion(
-                    v => AesService.Encrypt(v),  // Encrypt when writing to the database
-                    v => AesService.Decrypt(v)   // Decrypt when reading from the database
+                    v => AesService.Encrypt(v),
+                    v => AesService.Decrypt(v)
                 );
         }
-
-
-        //public override int SaveChanges()
-        //{
-        //    ApplyEncryption();
-        //    return base.SaveChanges();
-        //}
-
-        //public override async Task<int> SaveChangesAsync(CancellationToken cancellationToken = default)
-        //{
-        //    ApplyEncryption();
-        //    return await base.SaveChangesAsync(cancellationToken);
-        //}
 
         private void ApplyEncryption()
         {
             var entries = ChangeTracker.Entries().Where(e => e.State == EntityState.Added || e.State == EntityState.Modified);
             foreach (var entry in entries)
             {
-                if (entry.State == EntityState.Added || entry.State == EntityState.Modified)
+                if (entry.Entity is User user)
                 {
-                    if (entry.Entity is User user)
+                    if (!string.IsNullOrWhiteSpace(user.UserName))
                     {
-                        if (!string.IsNullOrWhiteSpace(user.Name))
-                        {
-                            user.Name = AesService.Encrypt(user.Name);
-                        }
-                        if (!string.IsNullOrWhiteSpace(user.Email))
-                        {
-                            user.Email = AesService.Encrypt(user.Email);
-                        }
+                        user.UserName = AesService.Encrypt(user.UserName);
+                    }
+                    if (!string.IsNullOrWhiteSpace(user.Email))
+                    {
+                        user.Email = AesService.Encrypt(user.Email);
                     }
                 }
 
-                if (entry.State == EntityState.Added || entry.State == EntityState.Modified)
+                if (entry.Entity is Case cas)
                 {
-                    if (entry.Entity is Case cas)
+                    if (!string.IsNullOrWhiteSpace(cas.Name))
                     {
-                        if (!string.IsNullOrWhiteSpace(cas.Name))
-                        {
-                            cas.Name = AesService.Encrypt(cas.Name);
-                        }
+                        cas.Name = AesService.Encrypt(cas.Name);
+                    }
 
-                        if (!string.IsNullOrWhiteSpace(cas.Description))
-                        {
-                            cas.Description = AesService.Encrypt(cas.Description);
-                        }
+                    if (!string.IsNullOrWhiteSpace(cas.Description))
+                    {
+                        cas.Description = AesService.Encrypt(cas.Description);
                     }
                 }
 
-                if (entry.State == EntityState.Added || entry.State == EntityState.Modified)
+                if (entry.Entity is Tip tip)
                 {
-                    if (entry.Entity is Tip tip)
+                    if (!string.IsNullOrWhiteSpace(tip.Description))
                     {
-                        if (!string.IsNullOrWhiteSpace(tip.Description))
-                        {
-                            tip.Description = AesService.Encrypt(tip.Description);
-                        }
+                        tip.Description = AesService.Encrypt(tip.Description);
                     }
                 }
 
-                if (entry.State == EntityState.Added || entry.State == EntityState.Modified)
+                if (entry.Entity is ContactPerson person)
                 {
-                    if (entry.Entity is ContactPerson person)
+                    if (!string.IsNullOrWhiteSpace(person.Name))
                     {
-                        if (!string.IsNullOrWhiteSpace(person.Name))
-                        {
-                            person.Name = AesService.Encrypt(person.Name);
-                        }
-                        if (!string.IsNullOrWhiteSpace(person.Phone))
-                        {
-                            person.Phone = AesService.Encrypt(person.Phone);
-                        }
+                        person.Name = AesService.Encrypt(person.Name);
+                    }
+                    if (!string.IsNullOrWhiteSpace(person.Phone))
+                    {
+                        person.Phone = AesService.Encrypt(person.Phone);
                     }
                 }
             }

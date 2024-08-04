@@ -1,7 +1,9 @@
 using CryptographyTest.Models;
 using CryptographyTest.Services;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
+using System.Security.Claims;
 
 namespace CryptographyTest.Controllers
 {
@@ -18,7 +20,8 @@ namespace CryptographyTest.Controllers
             _context = context;
         }
 
-        [HttpGet, Route("/Get/All/Cases"),]
+        [Authorize(Roles = "Supervisor, Detective")]
+        [HttpGet, Route("/Get/All/Cases")]
         public async Task<ICollection<Case>> GetCases()
         {
             var cases = await _context.Cases
@@ -30,6 +33,22 @@ namespace CryptographyTest.Controllers
 
             return cases;
         }
+
+        [Authorize(Roles = "Detective")]
+        [HttpGet, Route("/Get/MyCases")]
+        public async Task<ICollection<Case>> GetMyCases()
+        {
+            var userId = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+            var cases = await _context.Cases
+                            .Where(c => c.Detective.Id.ToString() == userId)
+                            .Include(x => x.Supervisor)
+                            .Include(x => x.Tips)
+                            .ThenInclude(y => y.ContactPerson)
+                            .ToListAsync();
+
+            return cases;
+        }
+
         [HttpGet, Route("/Get/All/Tips"),]
         public async Task<ICollection<Tip>> GetTips()
         {
