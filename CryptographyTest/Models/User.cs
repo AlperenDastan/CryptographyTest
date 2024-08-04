@@ -1,15 +1,11 @@
-﻿namespace CryptographyTest.Models
-{
-    public class User : BaseEntity
-    {
-        public string? UserName { get; set; }  // Use this for login identification
-        public string Password { get; set; }
-        public string? BadgeNumber { get; set; }
-        public string? Email { get; set; }
-        public UserRole Role { get; set; }
+﻿using Microsoft.AspNetCore.Identity;
 
-        // Optionally, if you want a separate UserId property, it can return Id from BaseEntity
-        public Guid UserId => this.Id; // Alternatively, you can just use Id directly
+namespace CryptographyTest.Models
+{
+    public class User : IdentityUser<Guid>  // Inherits from IdentityUser with Guid as the primary key
+    {
+        public string? BadgeNumber { get; set; } // Additional property specific to your application
+        public UserRole Role { get; set; }       // Additional property for role management
     }
 
     public enum UserRole
@@ -19,3 +15,4 @@
         Admin = 2,
     }
 }
+

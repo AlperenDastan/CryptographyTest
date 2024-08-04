@@ -1,6 +1,7 @@
 using CryptographyTest.Models;
 using CryptographyTest.Services;
 using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using System.Security.Claims;
@@ -13,11 +14,13 @@ namespace CryptographyTest.Controllers
     {
         private readonly DetectiveApiDbContext _context;
         private readonly ILogger<WeatherForecastController> _logger;
+        private readonly UserManager<User> _userManager;
 
-        public WeatherForecastController(ILogger<WeatherForecastController> logger, DetectiveApiDbContext context)
+        public WeatherForecastController(ILogger<WeatherForecastController> logger, DetectiveApiDbContext context, UserManager<User> userManager)
         {
             _logger = logger;
             _context = context;
+            _userManager = userManager;  // Initialize it here
         }
 
         [Authorize(Roles = "Supervisor, Detective")]
@@ -88,17 +91,17 @@ namespace CryptographyTest.Controllers
             return users;
         }
 
-        [HttpGet, Route("/Post/VerifyPassword"),]
+        [HttpGet, Route("/Post/VerifyPassword")]
         public async Task<IActionResult> VerifyPassword(Guid userId, string rawPassword)
         {
             var user = await _context.Users.FirstOrDefaultAsync(x => x.Id == userId);
             if (user is not null)
             {
-                var result = HashingService.VerifyPassword(rawPassword, user.Password);
+                var result = await _userManager.CheckPasswordAsync(user, rawPassword);  // Use CheckPasswordAsync
 
                 if (result)
                 {
-                    return Ok($"Success. Raw={rawPassword}, StoredHash={user?.Password}");
+                    return Ok($"Success. Raw={rawPassword}, StoredHash={user.PasswordHash}");
                 }
 
                 return Unauthorized("Failed to verify hash");

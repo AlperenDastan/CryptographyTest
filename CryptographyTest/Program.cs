@@ -12,7 +12,7 @@ var builder = WebApplication.CreateBuilder(args);
 builder.Services.AddDbContext<DetectiveApiDbContext>(options =>
         options.UseSqlite("Data Source=detectiveapi.db"));
 
-builder.Services.AddIdentity<User, IdentityRole>()
+builder.Services.AddIdentity<User, IdentityRole<Guid>>()
     .AddEntityFrameworkStores<DetectiveApiDbContext>()
     .AddDefaultTokenProviders();
 
@@ -63,10 +63,9 @@ app.MapControllers();
 using (var scope = app.Services.CreateScope())
 {
     var dbContext = scope.ServiceProvider.GetRequiredService<DetectiveApiDbContext>();
-    // Ensure the database is created and migrations are applied
-    dbContext.Database.Migrate();
-    // Seed the database
-    DbContextExtensions.EnsureSeedData(dbContext);
+    var userManager = scope.ServiceProvider.GetRequiredService<UserManager<User>>();
+    await dbContext.Database.MigrateAsync();
+    await DbContextExtensions.EnsureSeedDataAsync(dbContext, userManager);
 }
 
 app.Run();

@@ -1,7 +1,8 @@
-﻿using CryptographyTest.Services;
-using Microsoft.AspNetCore.Mvc;
+﻿using CryptographyTest.Models;
+using CryptographyTest.Services;
 using Microsoft.AspNetCore.Identity;
-using CryptographyTest.Models;
+using Microsoft.AspNetCore.Mvc;
+using System.Threading.Tasks;
 
 namespace CryptographyTest.Controllers
 {
@@ -34,7 +35,7 @@ namespace CryptographyTest.Controllers
         [HttpPost("register")]
         public async Task<IActionResult> Register([FromBody] RegisterModel model)
         {
-            var user = new User { UserName = model.Username, Email = model.Email, Role = model.Role };
+            var user = new User { UserName = model.Username, Email = model.Email, BadgeNumber = model.BadgeNumber, Role = model.Role };
             var result = await _userManager.CreateAsync(user, model.Password);
 
             if (result.Succeeded)
@@ -56,7 +57,9 @@ namespace CryptographyTest.Controllers
     {
         public string Username { get; set; }
         public string Email { get; set; }
+        public string BadgeNumber { get; set; }
         public string Password { get; set; }
         public UserRole Role { get; set; }
     }
 }
+

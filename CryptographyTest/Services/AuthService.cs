@@ -4,6 +4,7 @@ using Microsoft.IdentityModel.Tokens;
 using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
 using System.Security.Cryptography;
+using System.Threading.Tasks;
 
 namespace CryptographyTest.Services
 {
@@ -24,10 +25,10 @@ namespace CryptographyTest.Services
         {
             var claims = new List<Claim>
             {
-                new Claim(JwtRegisteredClaimNames.Sub, user.UserName),  // Now this will work correctly
+                new Claim(JwtRegisteredClaimNames.Sub, user.UserName), // Using Identity's UserName property
                 new Claim(JwtRegisteredClaimNames.Jti, Guid.NewGuid().ToString()),
-                new Claim(ClaimTypes.NameIdentifier, user.Id.ToString()),
-                new Claim(ClaimTypes.Role, user.Role.ToString())
+                new Claim(ClaimTypes.NameIdentifier, user.Id.ToString()), // Identity's Id
+                new Claim(ClaimTypes.Role, user.Role.ToString()) // Assuming you have Role set up
             };
 
             var signingKey = new RsaSecurityKey(_privateKey);
@@ -42,6 +43,23 @@ namespace CryptographyTest.Services
             );
 
             return new JwtSecurityTokenHandler().WriteToken(token);
+        }
+
+        public async Task<SignInResult> SignInAsync(string userName, string password, bool rememberMe = false)
+        {
+            var result = await _signInManager.PasswordSignInAsync(userName, password, rememberMe, lockoutOnFailure: false);
+            return result;
+        }
+
+        public async Task<IdentityResult> RegisterAsync(User user, string password)
+        {
+            var result = await _userManager.CreateAsync(user, password);
+            return result;
+        }
+
+        public async Task<User> FindByNameAsync(string userName)
+        {
+            return await _userManager.FindByNameAsync(userName);
         }
     }
 }
