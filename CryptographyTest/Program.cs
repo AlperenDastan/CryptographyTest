@@ -12,9 +12,17 @@ var builder = WebApplication.CreateBuilder(args);
 builder.Services.AddDbContext<DetectiveApiDbContext>(options =>
         options.UseSqlite("Data Source=detectiveapi.db"));
 
-builder.Services.AddIdentity<User, IdentityRole<Guid>>()
-    .AddEntityFrameworkStores<DetectiveApiDbContext>()
-    .AddDefaultTokenProviders();
+builder.Services.AddIdentity<User, IdentityRole<Guid>>(options =>
+{
+    // Configure password requirements
+    options.Password.RequireDigit = true;
+    options.Password.RequiredLength = 8;
+    options.Password.RequireNonAlphanumeric = false; // Disable the requirement for non-alphanumeric characters
+    options.Password.RequireUppercase = true;
+    options.Password.RequireLowercase = false;
+})
+.AddEntityFrameworkStores<DetectiveApiDbContext>()
+.AddDefaultTokenProviders();
 
 builder.Services.AddScoped<AuthService>();
 

@@ -38,7 +38,7 @@ namespace CryptographyTest.Services
                 issuer: "CryptographyTest",
                 audience: "CryptographyTestAPI",
                 claims: claims,
-                expires: DateTime.Now.AddMinutes(30),
+                expires: DateTime.Now.AddMinutes(60),
                 signingCredentials: creds
             );
 
