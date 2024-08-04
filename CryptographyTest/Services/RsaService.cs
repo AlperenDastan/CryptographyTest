@@ -56,6 +56,5 @@ namespace CryptographyTest.Services
                 return Convert.ToBase64String(rsa.ExportCspBlob(false)); // Export the public key as a base64 string
             }
         }
-        }
     }
 }
