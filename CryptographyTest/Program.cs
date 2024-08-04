@@ -16,6 +16,9 @@ builder.Services.AddIdentity<User, IdentityRole<Guid>>()
     .AddEntityFrameworkStores<DetectiveApiDbContext>()
     .AddDefaultTokenProviders();
 
+builder.Services.AddScoped<AuthService>();
+
+
 // Configure RSA for JWT
 var rsa = new RSACryptoServiceProvider(2048);
 var signingKey = new RsaSecurityKey(rsa.ExportParameters(true));
