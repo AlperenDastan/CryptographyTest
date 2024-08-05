@@ -3,12 +3,22 @@ using System.Text;
 
 namespace CryptographyTest.Services
 {
-
     public static class HashingService
     {
-        private const string Salt = "12345678";  // Static salt for simplicity, consider a unique salt per user
+        private const int SaltSize = 16; // 128-bit salt
 
-        public static string HashPassword(string password)
+        public static string GenerateSalt()
+        {
+            // Generate a cryptographically strong random salt
+            using (var rng = new RNGCryptoServiceProvider())
+            {
+                var saltBytes = new byte[SaltSize];
+                rng.GetBytes(saltBytes);
+                return Convert.ToBase64String(saltBytes);
+            }
+        }
+
+        public static string HashPassword(string password, string salt)
         {
             if (string.IsNullOrEmpty(password))
             {
@@ -16,7 +26,7 @@ namespace CryptographyTest.Services
             }
 
             // Combine the password with the salt
-            var saltedPassword = string.Concat(password, Salt);
+            var saltedPassword = string.Concat(password, salt);
 
             using (var sha256 = SHA256.Create())
             {
@@ -29,13 +39,12 @@ namespace CryptographyTest.Services
             }
         }
 
-        public static bool VerifyPassword(string enteredPassword, string storedHash)
+        public static bool VerifyPassword(string enteredPassword, string storedHash, string storedSalt)
         {
-            // Hash the entered password
-            var hashOfEnteredPassword = HashPassword(enteredPassword);
+            // Hash the entered password with the stored salt
+            var hashOfEnteredPassword = HashPassword(enteredPassword, storedSalt);
             // Check if the hashes match
             return hashOfEnteredPassword == storedHash;
         }
     }
-
 }
