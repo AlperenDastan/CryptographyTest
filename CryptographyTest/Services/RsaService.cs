@@ -5,17 +5,54 @@ namespace CryptographyTest.Services
 {
     public static class RsaService
     {
+        private static readonly string PublicKeyPath = "publicKey.xml";
+        private static readonly string PrivateKeyPath = "privateKey.xml";
         private static RSAParameters _publicKey;
         private static RSAParameters _privateKey;
 
         static RsaService()
         {
-            // Key Pair Generation
+            if (!LoadKeys())
+            {
+                GenerateAndSaveKeys();
+            }
+        }
+
+        private static bool LoadKeys()
+        {
+            try
+            {
+                if (File.Exists(PublicKeyPath) && File.Exists(PrivateKeyPath))
+                {
+                    using (var rsa = new RSACryptoServiceProvider(2048))
+                    {
+                        rsa.PersistKeyInCsp = false;
+                        rsa.FromXmlString(File.ReadAllText(PublicKeyPath));
+                        _publicKey = rsa.ExportParameters(false);
+
+                        rsa.FromXmlString(File.ReadAllText(PrivateKeyPath));
+                        _privateKey = rsa.ExportParameters(true);
+                    }
+                    return true;
+                }
+            }
+            catch (Exception)
+            {
+                // Handle any exceptions (e.g., log the issue)
+            }
+            return false;
+        }
+
+        private static void GenerateAndSaveKeys()
+        {
             using (var rsa = new RSACryptoServiceProvider(2048))
             {
-                rsa.PersistKeyInCsp = false; // Do not persist the keys in a container
-                _publicKey = rsa.ExportParameters(false); // Export only the public key
-                _privateKey = rsa.ExportParameters(true); // Export both public and private key
+                rsa.PersistKeyInCsp = false;
+                _publicKey = rsa.ExportParameters(false);
+                _privateKey = rsa.ExportParameters(true);
+
+                File.WriteAllText(PublicKeyPath, rsa.ToXmlString(false)); // Save public key
+                File.WriteAllText(PrivateKeyPath, rsa.ToXmlString(true));  // Save private key
             }
         }
 
@@ -27,10 +64,10 @@ namespace CryptographyTest.Services
             using (var rsa = new RSACryptoServiceProvider(2048))
             {
                 rsa.PersistKeyInCsp = false;
-                rsa.ImportParameters(_publicKey); // Use the public key for encryption
+                rsa.ImportParameters(_publicKey);
                 var data = Encoding.UTF8.GetBytes(plainText);
-                var encryptedData = rsa.Encrypt(data, false); // Encrypt the data
-                return Convert.ToBase64String(encryptedData); // Return encrypted data as a base64 string
+                var encryptedData = rsa.Encrypt(data, true);
+                return Convert.ToBase64String(encryptedData);
             }
         }
 
@@ -42,10 +79,10 @@ namespace CryptographyTest.Services
             using (var rsa = new RSACryptoServiceProvider(2048))
             {
                 rsa.PersistKeyInCsp = false;
-                rsa.ImportParameters(_privateKey); // Use the private key for decryption
+                rsa.ImportParameters(_privateKey);
                 var data = Convert.FromBase64String(cipherText);
-                var decryptedData = rsa.Decrypt(data, false); // Decrypt the data
-                return Encoding.UTF8.GetString(decryptedData); // Return decrypted data as a string
+                var decryptedData = rsa.Decrypt(data, true);
+                return Encoding.UTF8.GetString(decryptedData);
             }
         }
 
@@ -53,7 +90,7 @@ namespace CryptographyTest.Services
         {
             using (var rsa = new RSACryptoServiceProvider(2048))
             {
-                return Convert.ToBase64String(rsa.ExportCspBlob(false)); // Export the public key as a base64 string
+                return Convert.ToBase64String(rsa.ExportCspBlob(false));
             }
         }
     }
