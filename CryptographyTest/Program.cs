@@ -6,21 +6,21 @@ using System.Security.Cryptography;
 using CryptographyTest.Models;
 using CryptographyTest.Services;
 
-var MyAllowSpecificOrigins = "_myAllowSpecificOrigins";
 var builder = WebApplication.CreateBuilder(args);
 
 // Add services to the container.
 builder.Services.AddCors(options =>
 {
-    options.AddPolicy(name: MyAllowSpecificOrigins,
-                      policy =>
-                      {
-                          policy.WithOrigins("http://localhost:4200") // Update to your frontend's URL
-                                .AllowAnyHeader()
-                                .AllowAnyMethod()
-                                .AllowCredentials(); // If you're using authentication
-                      });
+    options.AddPolicy("AllowLocalhost4200", policy =>
+        {
+            policy.WithOrigins("https://localhost:4200")
+                  .AllowAnyMethod()
+                  .AllowAnyHeader()
+                  .AllowCredentials(); // Allow credentials like cookies or tokens
+        });
 });
+
+
 
 builder.Services.AddDbContext<DetectiveApiDbContext>(options =>
         options.UseSqlite("Data Source=detectiveapi.db"));
@@ -77,8 +77,8 @@ if (app.Environment.IsDevelopment())
     app.UseSwaggerUI();
 }
 
+app.UseCors("AllowLocalhost4200");
 app.UseHttpsRedirection();
-app.UseCors(MyAllowSpecificOrigins);
 app.UseAuthentication();
 app.UseAuthorization();
 
