@@ -8,6 +8,12 @@ using CryptographyTest.Services;
 
 var builder = WebApplication.CreateBuilder(args);
 
+
+// Get the path to the wwwroot directory
+var environment = builder.Environment;
+var wwwrootPath = Path.Combine(Directory.GetCurrentDirectory(), "database", "detectiveapi.db");
+//var wwwrootPath = Path.Combine(environment.WebRootPath, "detectiveapi.db");
+
 // Add services to the container.
 builder.Services.AddCors(options =>
 {
@@ -23,7 +29,7 @@ builder.Services.AddCors(options =>
 
 
 builder.Services.AddDbContext<DetectiveApiDbContext>(options =>
-        options.UseSqlite("Data Source=detectiveapi.db"));
+        options.UseSqlite($"Data Source={wwwrootPath}"));
 
 builder.Services.AddIdentity<User, IdentityRole<Guid>>(options =>
 {
@@ -76,9 +82,12 @@ var app = builder.Build();
 //    app.UseSwagger();
 //    app.UseSwaggerUI();
 //}
-
 app.UseSwagger();
-app.UseSwaggerUI();
+app.UseSwaggerUI(c =>
+{
+    //c.SwaggerEndpoint("/swagger/v1/swagger.json", "My API V1");
+    //c.RoutePrefix = string.Empty; // Set Swagger UI at the root of the application
+});
 
 app.UseCors();
 app.UseHttpsRedirection();

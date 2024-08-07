@@ -26,10 +26,11 @@ namespace CryptographyTest.Controllers
             if (user != null && await _userManager.CheckPasswordAsync(user, model.Password))
             {
                 var token = await _authService.GenerateJwtToken(user);
-                return Ok(new { Token = token });
+                // Populate other details as necessary
+                return Ok(new AuthResponse { Token = token, Role = user.Role.ToString(), UserId = user.Id, Username = user.UserName });
             }
 
-            return Unauthorized("Invalid login attempt.");
+            return BadRequest("Invalid login attempt.");
         }
 
         [HttpPost("register")]
@@ -60,6 +61,13 @@ namespace CryptographyTest.Controllers
         public string BadgeNumber { get; set; }
         public string Password { get; set; }
         public UserRole Role { get; set; }
+    }
+    public class AuthResponse
+    {
+        public string Token { get; set; }
+        public string Role { get; set; } // Assuming role management is handled elsewhere
+        public Guid UserId { get; set; } // Assuming user ID can be fetched or stored
+        public string Username { get; set; }
     }
 }
 

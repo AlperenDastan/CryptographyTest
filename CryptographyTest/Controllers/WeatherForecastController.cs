@@ -9,7 +9,7 @@ using System.Security.Claims;
 namespace CryptographyTest.Controllers
 {
     [ApiController]
-    [Route("[controller]")]
+    [Route("api/[controller]")]
     public class WeatherForecastController : ControllerBase
     {
         private readonly DetectiveApiDbContext _context;
@@ -24,7 +24,7 @@ namespace CryptographyTest.Controllers
         }
 
         [Authorize(Roles = "Supervisor, Detective")]
-        [HttpGet, Route("/Get/All/Cases")]
+        [HttpGet, Route("/api/Get/All/Cases")]
         public async Task<ICollection<Case>> GetCases()
         {
             var cases = await _context.Cases
@@ -38,7 +38,7 @@ namespace CryptographyTest.Controllers
         }
 
         [Authorize(Roles = "Detective")]
-        [HttpGet, Route("/Get/MyCases")]
+        [HttpGet, Route("/api/Get/MyCases")]
         public async Task<ICollection<Case>> GetMyCases()
         {
             var userId = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
@@ -52,7 +52,7 @@ namespace CryptographyTest.Controllers
             return cases;
         }
 
-        [HttpGet, Route("/Get/All/Tips"),]
+        [HttpGet, Route("/api/Get/All/Tips"),]
         public async Task<ICollection<Tip>> GetTips()
         {
             var tips = await _context.Tips
@@ -78,20 +78,20 @@ namespace CryptographyTest.Controllers
         }
 
 
-        [HttpGet, Route("/Get/All/Persons"),]
+        [HttpGet, Route("/api/Get/All/Persons"),]
         public async Task<ICollection<ContactPerson>> GetContactPersons()
         {
             var persons = await _context.ContactPersons.ToListAsync();
             return persons;
         }
-        [HttpGet, Route("/Get/All/Users"),]
+        [HttpGet, Route("/api/Get/All/Users"),]
         public async Task<ICollection<User>> GetUsers()
         {
             var users = await _context.Users.ToListAsync();
             return users;
         }
 
-        [HttpGet, Route("/Post/VerifyPassword")]
+        [HttpGet, Route("/api/Post/VerifyPassword")]
         public async Task<IActionResult> VerifyPassword(Guid userId, string rawPassword)
         {
             var user = await _context.Users.FirstOrDefaultAsync(x => x.Id == userId);
@@ -110,7 +110,7 @@ namespace CryptographyTest.Controllers
             return BadRequest("User not found");
         }
 
-        [HttpPost, Route("/Post/Encrypt/Cases/Name")]
+        [HttpPost, Route("/api/Post/Encrypt/Cases/Name")]
         public async Task<ActionResult<string>> EncryptCaseNames()
         {
             var cases = await _context.Cases.ToListAsync();
@@ -132,7 +132,7 @@ namespace CryptographyTest.Controllers
         }
 
 
-        [HttpPost, Route("/Post/Decrypt/Cases/Name")]
+        [HttpPost, Route("/api/Post/Decrypt/Cases/Name")]
         public async Task<ActionResult<string>> DecryptCaseNames()
         {
             var cases = await _context.Cases.ToListAsync();
@@ -154,7 +154,7 @@ namespace CryptographyTest.Controllers
         }
 
 
-        [HttpPost, Route("/Post/Case/Tip")]
+        [HttpPost, Route("/api/Post/Case/Tip")]
         public async Task<ActionResult<string>> PostTip(Guid caseId, TipDto tip)
         {
             var cas = await _context.Cases.Include(x => x.Tips)
