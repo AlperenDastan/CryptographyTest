@@ -36,23 +36,48 @@ namespace CryptographyTest.Models
 
             if (!context.Cases.Any())
             {
-                var detective = context.Users.FirstOrDefault(u => u.Role == UserRole.Detective);
+                var detectives = context.Users.Where(u => u.Role == UserRole.Detective).ToList();
                 var supervisor = context.Users.FirstOrDefault(u => u.Role == UserRole.Supervisor);
                 var tips = context.Tips.ToList();
 
-                var caseLocal = new Case
+                var cases = new List<Case>
                 {
-                    Name = "High Profile Burglary",
-                    SerialNumber = "CP-112233",
-                    Notes = new List<string?> { "Urgent", "High value items stolen" },
-                    Description = "Investigation of a high profile burglary in downtown district.",
-                    Detective = detective,
-                    Supervisor = supervisor,
-                    Status = CaseStatus.Active,
-                    Tips = tips
+                    new Case
+                    {
+                        Name = "High Profile Burglary",
+                        SerialNumber = "CP-112233",
+                        Notes = new List<string?> { "Urgent", "High value items stolen" },
+                        Description = "Investigation of a high profile burglary in downtown district.",
+                        Detective = detectives.FirstOrDefault(),
+                        Supervisor = supervisor,
+                        Status = CaseStatus.Active,
+                        Tips = tips
+                    },
+                    new Case
+                    {
+                        Name = "Cyber Fraud Investigation",
+                        SerialNumber = "CP-112244",
+                        Notes = new List<string?> { "Complex case involving international fraud" },
+                        Description = "Investigation of a complex cyber fraud involving multiple international banks.",
+                        Detective = detectives.Skip(1).FirstOrDefault(),  // Assigning to the next detective
+                        Supervisor = supervisor,
+                        Status = CaseStatus.Active,
+                        Tips = tips
+                    },
+                    new Case
+                    {
+                        Name = "Missing Person",
+                        SerialNumber = "CP-112255",
+                        Notes = new List<string?> { "Possible kidnapping" },
+                        Description = "Investigation of a missing person case with possible kidnapping.",
+                        Detective = detectives.FirstOrDefault(),  // Assigning to the first detective again
+                        Supervisor = supervisor,
+                        Status = CaseStatus.Active,
+                        Tips = tips
+                    }
                 };
 
-                context.Cases.Add(caseLocal);
+                context.Cases.AddRange(cases);
                 await context.SaveChangesAsync();
             }
 
