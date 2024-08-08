@@ -25,16 +25,38 @@ namespace CryptographyTest.Controllers
 
         [Authorize(Roles = "Supervisor, Detective")]
         [HttpGet, Route("/api/Get/All/Cases")]
-        public async Task<ICollection<Case>> GetCases()
+        public async Task<IActionResult> GetCases()
         {
-            var cases = await _context.Cases
-                            .Include(x => x.Detective)
-                            .Include(x => x.Supervisor)
-                            .Include(x => x.Tips)
-                            .ThenInclude(y => y.ContactPerson)
-                            .ToListAsync();
+            var userRole = User.FindFirst(ClaimTypes.Role)?.Value;
 
-            return cases;
+            if (userRole == "Supervisor")
+            {
+                // Supervisor: return all cases
+                var cases = await _context.Cases
+                    .Include(x => x.Detective)
+                    .Include(x => x.Supervisor)
+                    .Include(x => x.Tips)
+                    .ThenInclude(y => y.ContactPerson)
+                    .ToListAsync();
+
+                return Ok(cases);
+            }
+            else if (userRole == "Detective")
+            {
+                // Detective: return only their own cases
+                var userId = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+                var cases = await _context.Cases
+                    .Where(c => c.Detective.Id.ToString() == userId)
+                    .Include(x => x.Supervisor)
+                    .Include(x => x.Tips)
+                    .ThenInclude(y => y.ContactPerson)
+                    .ToListAsync();
+
+                return Ok(cases);
+            }
+
+            // If the role is neither Supervisor nor Detective, return Unauthorized
+            return Unauthorized("You do not have permission to access these cases.");
         }
 
         [Authorize(Roles = "Detective")]

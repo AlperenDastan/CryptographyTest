@@ -12,26 +12,24 @@ namespace CryptographyTest.Services
     {
         private readonly UserManager<User> _userManager;
         private readonly SignInManager<User> _signInManager;
-        private readonly RSA _privateKey;
 
         public AuthService(UserManager<User> userManager, SignInManager<User> signInManager)
         {
             _userManager = userManager;
             _signInManager = signInManager;
-            _privateKey = new RSACryptoServiceProvider(2048);
         }
 
         public async Task<string> GenerateJwtToken(User user)
         {
             var claims = new List<Claim>
             {
-                new Claim(JwtRegisteredClaimNames.Sub, user.UserName), // Using Identity's UserName property
+                new Claim(JwtRegisteredClaimNames.Sub, user.UserName),
                 new Claim(JwtRegisteredClaimNames.Jti, Guid.NewGuid().ToString()),
-                new Claim(ClaimTypes.NameIdentifier, user.Id.ToString()), // Identity's Id
-                new Claim(ClaimTypes.Role, user.Role.ToString()) // Assuming you have Role set up
+                new Claim(ClaimTypes.NameIdentifier, user.Id.ToString()),
+                new Claim(ClaimTypes.Role, user.Role.ToString())
             };
 
-            var signingKey = new RsaSecurityKey(_privateKey);
+            var signingKey = RsaService.GetSigningKey();
             var creds = new SigningCredentials(signingKey, SecurityAlgorithms.RsaSha256);
 
             var token = new JwtSecurityToken(

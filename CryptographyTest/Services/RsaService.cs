@@ -1,4 +1,5 @@
-﻿using System.Security.Cryptography;
+﻿using Microsoft.IdentityModel.Tokens;
+using System.Security.Cryptography;
 using System.Text;
 
 namespace CryptographyTest.Services
@@ -28,12 +29,22 @@ namespace CryptographyTest.Services
                 {
                     rsa.PersistKeyInCsp = false;
 
+                    // Retrieve keys from the configuration
+                    var publicKeyXml = rsaSettings.GetValue<string>("PublicKey");
+                    var privateKeyXml = rsaSettings.GetValue<string>("PrivateKey");
+
+                    // Check if keys are missing
+                    if (string.IsNullOrEmpty(publicKeyXml) || string.IsNullOrEmpty(privateKeyXml))
+                    {
+                        throw new InvalidOperationException("RSA keys are not found in the configuration.");
+                    }
+
                     // Load the public key
-                    rsa.FromXmlString(rsaSettings.GetValue<string>("PublicKey"));
+                    rsa.FromXmlString(publicKeyXml);
                     _publicKey = rsa.ExportParameters(false);
 
                     // Load the private key
-                    rsa.FromXmlString(rsaSettings.GetValue<string>("PrivateKey"));
+                    rsa.FromXmlString(privateKeyXml);
                     _privateKey = rsa.ExportParameters(true);
                 }
             }
@@ -68,23 +79,32 @@ namespace CryptographyTest.Services
         //    return false;
         //}
 
-        //private static void GenerateAndSaveKeys()
+        // to generate new keys
+        //public static void GenerateAndSaveKeys()
         //{
         //    using (var rsa = new RSACryptoServiceProvider(2048))
         //    {
         //        rsa.PersistKeyInCsp = false;
+
+        //       // Export the keys
         //        _publicKey = rsa.ExportParameters(false);
         //        _privateKey = rsa.ExportParameters(true);
 
-        //        File.WriteAllText(PublicKeyPath, rsa.ToXmlString(false)); // Save public key
-        //        File.WriteAllText(PrivateKeyPath, rsa.ToXmlString(true));  // Save private key
+        //        // Save the keys in XML format
+        //        string publicKeyXml = rsa.ToXmlString(false);
+        //        string privateKeyXml = rsa.ToXmlString(true);
+
+        //        // Save the keys to XML files
+        //        System.IO.File.WriteAllText("publicKey.xml", publicKeyXml);
+        //        System.IO.File.WriteAllText("privateKey.xml", privateKeyXml);
         //    }
         //}
+
 
         public static string Encrypt(string plainText)
         {
             if (string.IsNullOrEmpty(plainText))
-                throw new ArgumentException("plainText");
+                throw new ArgumentException("plainText cannot be null or empty");
 
             using (var rsa = new RSACryptoServiceProvider(2048))
             {
@@ -99,7 +119,7 @@ namespace CryptographyTest.Services
         public static string Decrypt(string cipherText)
         {
             if (string.IsNullOrEmpty(cipherText))
-                throw new ArgumentException("cipherText");
+                throw new ArgumentException("cipherText cannot be null or empty");
 
             using (var rsa = new RSACryptoServiceProvider(2048))
             {
@@ -110,13 +130,18 @@ namespace CryptographyTest.Services
                 return Encoding.UTF8.GetString(decryptedData);
             }
         }
-
-        public static string GetPublicKey()
+        public static RsaSecurityKey GetSigningKey()
         {
-            using (var rsa = new RSACryptoServiceProvider(2048))
-            {
-                return Convert.ToBase64String(rsa.ExportCspBlob(false));
-            }
+            var rsa = new RSACryptoServiceProvider(2048);
+            rsa.ImportParameters(_privateKey);
+            return new RsaSecurityKey(rsa);
+        }
+
+        public static RsaSecurityKey GetValidationKey()
+        {
+            var rsa = new RSACryptoServiceProvider(2048);
+            rsa.ImportParameters(_publicKey);
+            return new RsaSecurityKey(rsa);
         }
     }
 }

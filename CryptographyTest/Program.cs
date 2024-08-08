@@ -8,6 +8,8 @@ using CryptographyTest.Services;
 
 var builder = WebApplication.CreateBuilder(args);
 
+// Optional: Generate new RSA keys (do this only when you need to generate new keys)
+//RsaService.GenerateAndSaveKeys();
 
 // Get the path to the wwwroot directory
 var environment = builder.Environment;
@@ -47,8 +49,8 @@ builder.Services.AddScoped<AuthService>();
 
 
 // Configure RSA for JWT
-var rsa = new RSACryptoServiceProvider(2048);
-var signingKey = new RsaSecurityKey(rsa.ExportParameters(true));
+var signingKey = RsaService.GetSigningKey();  // Private Key for signing
+var validationKey = RsaService.GetValidationKey();  // Public Key for validation
 
 builder.Services.AddAuthentication(options =>
 {
@@ -65,7 +67,7 @@ builder.Services.AddAuthentication(options =>
         ValidateIssuerSigningKey = true,
         ValidIssuer = "CryptographyTest",
         ValidAudience = "CryptographyTestAPI",
-        IssuerSigningKey = signingKey
+        IssuerSigningKey = validationKey 
     };
 });
 
