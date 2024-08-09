@@ -7,10 +7,16 @@
         public List<string?>? Notes { get; set; }
         public string? Description { get; set; }
         public List<Tip>? Tips { get; set; }
-        public User? Detective { get; set; }
-        public User? Supervisor { get; set; }
-        public CaseStatus Status { get; set; }
 
+        // Foreign key for Detective
+        public Guid DetectiveId { get; set; }  // Add this property
+        public User? Detective { get; set; }
+
+        // Foreign key for Supervisor
+        public Guid SupervisorId { get; set; }  // Add this property
+        public User? Supervisor { get; set; }
+
+        public CaseStatus Status { get; set; }
     }
 
     public enum CaseStatus

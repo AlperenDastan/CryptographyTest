@@ -19,6 +19,32 @@ namespace CryptographyTest.Models
                 await context.SaveChangesAsync();
             }
 
+            if (!userManager.Users.Any())
+            {
+                // Seed a detective user
+                var detectiveUser = new User
+                {
+                    UserName = "Detective1",
+                    Email = "detective1@example.com",
+                    Role = UserRole.Detective,
+                    BadgeNumber = "11111",
+                };
+                await userManager.CreateAsync(detectiveUser, "Password123!");
+
+                // Seed a supervisor user
+                var supervisorUser = new User
+                {
+                    UserName = "Supervisor1",
+                    Email = "supervisor1@example.com",
+                    Role = UserRole.Supervisor,
+                    BadgeNumber = "55555",
+                };
+                await userManager.CreateAsync(supervisorUser, "Password123!");
+
+                // Save changes
+                await context.SaveChangesAsync();
+            }
+
             if (!context.Users.Any())
             {
                 var users = new List<User>

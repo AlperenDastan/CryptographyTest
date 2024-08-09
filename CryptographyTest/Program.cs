@@ -8,6 +8,9 @@ using CryptographyTest.Services;
 
 var builder = WebApplication.CreateBuilder(args);
 
+// Configure Logging
+builder.Logging.AddConsole();
+
 // Optional: Generate new RSA keys (do this only when you need to generate new keys)
 //RsaService.GenerateAndSaveKeys();
 
@@ -30,8 +33,14 @@ builder.Services.AddCors(options =>
 
 
 
+//builder.Services.AddDbContext<DetectiveApiDbContext>(options =>
+//        options.UseSqlite($"Data Source={wwwrootPath}"));
 builder.Services.AddDbContext<DetectiveApiDbContext>(options =>
-        options.UseSqlite($"Data Source={wwwrootPath}"));
+{
+    options.UseSqlite($"Data Source={wwwrootPath}");
+    options.EnableSensitiveDataLogging();  // This allows you to log parameter values in the SQL queries
+});
+
 
 builder.Services.AddIdentity<User, IdentityRole<Guid>>(options =>
 {

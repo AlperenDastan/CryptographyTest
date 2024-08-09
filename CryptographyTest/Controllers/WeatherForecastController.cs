@@ -39,25 +39,36 @@ namespace CryptographyTest.Controllers
                     .ThenInclude(y => y.ContactPerson)
                     .ToListAsync();
 
+                // Log the number of cases returned
+                Console.WriteLine($"Supervisor - Number of cases returned: {cases.Count}");
                 return Ok(cases);
             }
             else if (userRole == "Detective")
             {
                 // Detective: return only their own cases
-                var userId = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+                var userId = User.FindFirst(ClaimTypes.Sid)?.Value;
+                if (userId == null)
+                {
+                    return NotFound("Could not find user");
+                }
+                var parsed = Guid.TryParse(userId,out var parseduserid);
+                if (!parsed)
+                {
+                    return BadRequest("Could not parse userId");
+                }
                 var cases = await _context.Cases
-                    .Where(c => c.Detective.Id.ToString() == userId)
-                    .Include(x => x.Supervisor)
-                    .Include(x => x.Tips)
-                    .ThenInclude(y => y.ContactPerson)
+                    .Where(c => c.DetectiveId == parseduserid)
                     .ToListAsync();
 
+                // Log the number of cases returned
+                Console.WriteLine($"Detective - Number of cases returned: {cases.Count}");
                 return Ok(cases);
             }
 
             // If the role is neither Supervisor nor Detective, return Unauthorized
             return Unauthorized("You do not have permission to access these cases.");
         }
+
 
         [Authorize(Roles = "Detective")]
         [HttpGet, Route("/api/Get/MyCases")]
@@ -72,6 +83,40 @@ namespace CryptographyTest.Controllers
                             .ToListAsync();
 
             return cases;
+        }
+
+        [Authorize(Roles = "Supervisor, Admin")]
+        [HttpPost, Route("/api/Post/CreateCase")]
+        public async Task<IActionResult> CreateCase([FromBody] CreateCaseRequest model)
+        {
+            if (!ModelState.IsValid)
+            {
+                return BadRequest(ModelState);
+            }
+
+            var detective = await _context.Users.FindAsync(model.DetectiveId);
+            var supervisor = await _context.Users.FindAsync(model.SupervisorId);
+
+            if (detective == null || supervisor == null)
+            {
+                return BadRequest("Invalid Detective or Supervisor ID.");
+            }
+
+            var newCase = new Case
+            {
+                Name = model.Name,
+                Description = model.Description,
+                SerialNumber = model.SerialNumber,
+                Status = model.Status,
+                Detective = detective,
+                Supervisor = supervisor,
+                Notes = model.Notes?.ToList()
+            };
+
+            _context.Cases.Add(newCase);
+            await _context.SaveChangesAsync();
+
+            return Ok(newCase);
         }
 
         [HttpGet, Route("/api/Get/All/Tips"),]
@@ -106,11 +151,15 @@ namespace CryptographyTest.Controllers
             var persons = await _context.ContactPersons.ToListAsync();
             return persons;
         }
-        [HttpGet, Route("/api/Get/All/Users"),]
-        public async Task<ICollection<User>> GetUsers()
+        [HttpGet, Route("/api/Get/All/Users/{userId}")]
+        public async Task<IActionResult> GetUserById(Guid userId)
         {
-            var users = await _context.Users.ToListAsync();
-            return users;
+            var user = await _context.Users.FindAsync(userId);
+            if (user == null)
+            {
+                return NotFound();
+            }
+            return Ok(user);
         }
 
         [HttpGet, Route("/api/Post/VerifyPassword")]
@@ -228,5 +277,15 @@ namespace CryptographyTest.Controllers
         public string? Address { get; set; }
         public string? City { get; set; }
         public string? Notes { get; set; }
+    }
+    public class CreateCaseRequest
+    {
+        public string Name { get; set; }
+        public string Description { get; set; }
+        public string SerialNumber { get; set; }
+        public CaseStatus Status { get; set; }
+        public Guid DetectiveId { get; set; }
+        public Guid SupervisorId { get; set; }
+        public List<string>? Notes { get; set; }
     }
 }

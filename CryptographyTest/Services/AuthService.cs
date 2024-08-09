@@ -26,7 +26,9 @@ namespace CryptographyTest.Services
                 new Claim(JwtRegisteredClaimNames.Sub, user.UserName),
                 new Claim(JwtRegisteredClaimNames.Jti, Guid.NewGuid().ToString()),
                 new Claim(ClaimTypes.NameIdentifier, user.Id.ToString()),
-                new Claim(ClaimTypes.Role, user.Role.ToString())
+                new Claim(ClaimTypes.Role, user.Role.ToString()),
+                new Claim(ClaimTypes.Actor, user.BadgeNumber.ToString()),
+                new Claim(ClaimTypes.Sid, user.Id.ToString())
             };
 
             var signingKey = RsaService.GetSigningKey();
