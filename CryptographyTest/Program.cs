@@ -58,7 +58,6 @@ builder.Services.AddScoped<AuthService>();
 
 
 // Configure RSA for JWT
-var signingKey = RsaService.GetSigningKey();  // Private Key for signing
 var validationKey = RsaService.GetValidationKey();  // Public Key for validation
 
 builder.Services.AddAuthentication(options =>
