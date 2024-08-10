@@ -21,7 +21,6 @@ namespace CryptographyTest.Services
 
         public async Task<string> GenerateJwtToken(User user)
         {
-          
             var claims = new List<Claim>
             {
                 new Claim(JwtRegisteredClaimNames.Sub, user.UserName),
@@ -31,12 +30,6 @@ namespace CryptographyTest.Services
                 new Claim(ClaimTypes.Actor, user.BadgeNumber.ToString()),
                 new Claim(ClaimTypes.Sid, user.Id.ToString())
             };
-
-            // If a user would need an extra claim, in this instance a supervisor, but specifically only to the supervisor and not detective. 
-            // if (user.Role == UserRole.Supervisor)
-            // {
-            //    claims.Add(new Claim(ClaimTypes.System, "System 02"));
-            // }
 
             var signingKey = RsaService.GetSigningKey();
             var creds = new SigningCredentials(signingKey, SecurityAlgorithms.RsaSha256);

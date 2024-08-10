@@ -28,16 +28,7 @@ namespace CryptographyTest.Controllers
         public async Task<IActionResult> GetCases()
         {
             var userRole = User.FindFirst(ClaimTypes.Role)?.Value;
-            var userId = User.FindFirst(ClaimTypes.Sid)?.Value;
-            if (userId == null)
-            {
-                return NotFound("Could not find user");
-            }
-            var parsed = Guid.TryParse(userId, out var parseduserid);
-            if (!parsed)
-            {
-                return BadRequest("Could not parse userId");
-            }
+
             if (userRole == "Supervisor")
             {
                 // Supervisor: return all cases
@@ -46,7 +37,6 @@ namespace CryptographyTest.Controllers
                     .Include(x => x.Supervisor)
                     .Include(x => x.Tips)
                     .ThenInclude(y => y.ContactPerson)
-                    .Where(c => c.SupervisorId == parseduserid)
                     .ToListAsync();
 
                 // Log the number of cases returned
@@ -56,12 +46,17 @@ namespace CryptographyTest.Controllers
             else if (userRole == "Detective")
             {
                 // Detective: return only their own cases
-                
+                var userId = User.FindFirst(ClaimTypes.Sid)?.Value;
+                if (userId == null)
+                {
+                    return NotFound("Could not find user");
+                }
+                var parsed = Guid.TryParse(userId,out var parseduserid);
+                if (!parsed)
+                {
+                    return BadRequest("Could not parse userId");
+                }
                 var cases = await _context.Cases
-                    .Include(x => x.Detective)
-                    .Include(x => x.Supervisor)
-                    .Include(x => x.Tips)
-                    .ThenInclude(y => y.ContactPerson)
                     .Where(c => c.DetectiveId == parseduserid)
                     .ToListAsync();
 

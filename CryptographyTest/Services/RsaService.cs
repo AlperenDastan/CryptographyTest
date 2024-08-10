@@ -8,7 +8,7 @@ namespace CryptographyTest.Services
     {
         private static RSAParameters _publicKey;
         private static RSAParameters _privateKey;
-        private static int _keySize;
+
         static RsaService()
         {
             var configuration = new ConfigurationBuilder()
@@ -25,16 +25,13 @@ namespace CryptographyTest.Services
         {
             try
             {
-                _keySize = rsaSettings.GetValue<int>("KeySize");
-              
-                using (var rsa = new RSACryptoServiceProvider(1))
+                using (var rsa = new RSACryptoServiceProvider(2048))
                 {
                     rsa.PersistKeyInCsp = false;
 
                     // Retrieve keys from the configuration
                     var publicKeyXml = rsaSettings.GetValue<string>("PublicKey");
                     var privateKeyXml = rsaSettings.GetValue<string>("PrivateKey");
-                
 
                     // Check if keys are missing
                     if (string.IsNullOrEmpty(publicKeyXml) || string.IsNullOrEmpty(privateKeyXml))
@@ -109,7 +106,7 @@ namespace CryptographyTest.Services
             if (string.IsNullOrEmpty(plainText))
                 throw new ArgumentException("plainText cannot be null or empty");
 
-            using (var rsa = new RSACryptoServiceProvider())
+            using (var rsa = new RSACryptoServiceProvider(2048))
             {
                 rsa.PersistKeyInCsp = false;
                 rsa.ImportParameters(_publicKey);
@@ -124,7 +121,7 @@ namespace CryptographyTest.Services
             if (string.IsNullOrEmpty(cipherText))
                 throw new ArgumentException("cipherText cannot be null or empty");
 
-            using (var rsa = new RSACryptoServiceProvider())
+            using (var rsa = new RSACryptoServiceProvider(2048))
             {
                 rsa.PersistKeyInCsp = false;
                 rsa.ImportParameters(_privateKey);
@@ -135,14 +132,14 @@ namespace CryptographyTest.Services
         }
         public static RsaSecurityKey GetSigningKey()
         {
-            var rsa = new RSACryptoServiceProvider();
+            var rsa = new RSACryptoServiceProvider(2048);
             rsa.ImportParameters(_privateKey);
             return new RsaSecurityKey(rsa);
         }
 
         public static RsaSecurityKey GetValidationKey()
         {
-            var rsa = new RSACryptoServiceProvider();
+            var rsa = new RSACryptoServiceProvider(2048);
             rsa.ImportParameters(_publicKey);
             return new RsaSecurityKey(rsa);
         }
