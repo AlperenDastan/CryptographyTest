@@ -27,4 +27,9 @@
   <ItemGroup>
     <Folder Include="database\" />
   </ItemGroup>
+	<ItemGroup>
+		<None Update="database\detectiveapi.db">
+			<CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+		</None>
+	</ItemGroup>
 </Project>
